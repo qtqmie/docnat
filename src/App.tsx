@@ -9,8 +9,9 @@ import {
   LineChart, Layers, FileCheck, Hourglass, Loader2, Route, Check,
   CheckCircle2, CheckSquare, Landmark, CircleDot, Square, Clock, Lock,
   UserCircle, LogOut, Users, Bell, ShieldCheck, Activity, Settings, Trash2, X,
-  Target, Calendar, Award, BarChart3, ListTodo
+  Target, Calendar, Award, BarChart3, ListTodo, PieChart
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 
 // --- Types & Constants ---
 type User = { name: string; id: string; isAdmin?: boolean };
@@ -89,7 +90,7 @@ export default function App() {
   const [loginId, setLoginId] = useState('');
   const [loginError, setLoginError] = useState('');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [activeTab, setActiveTab] = useState<'phases' | 'tasks'>('phases');
+  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'tasks'>('overview');
   
   const [votes, setVotes] = useState<Votes>({ 1: [], 2: [], 3: [], 4: [] });
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -133,6 +134,33 @@ export default function App() {
   
   const completedDraftsCount = PHASES.slice(0, activePhase - 1).reduce((acc, phase) => acc + phase.drafts.length, 0);
   const totalDraftsCount = PHASES.reduce((acc, phase) => acc + phase.drafts.length, 0);
+
+  // --- Derived Stats for Overview ---
+  const totalTasks = TASKS.length;
+  const fullyCompletedTasks = TASKS.filter(t => (taskCompletion[t.id] || []).length === t.assignees.length).length;
+  const tasksProgress = Math.round((fullyCompletedTasks / totalTasks) * 100);
+
+  const startDate = new Date('2026-02-03').getTime();
+  const endDate = new Date('2026-05-14').getTime();
+  const today = new Date().getTime();
+  const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  const daysPassed = Math.max(0, Math.min(totalDays, Math.ceil((today - startDate) / (1000 * 60 * 60 * 24))));
+  const timeProgress = Math.round((daysPassed / totalDays) * 100);
+
+  const memberStats = BOARD_MEMBERS.map(m => {
+    const assigned = TASKS.filter(t => t.assignees.includes(m.id)).length;
+    const completed = TASKS.filter(t => t.assignees.includes(m.id) && (taskCompletion[t.id] || []).includes(m.id)).length;
+    return {
+      name: m.name.replace(/^(د\.|م\.|أ\.)\s*/, '').split(' ')[0],
+      'مهام مسندة': assigned,
+      'مهام منجزة': completed
+    };
+  });
+
+  const pieData = [
+    { name: 'مكتملة', value: fullyCompletedTasks, color: '#10b981' },
+    { name: 'قيد التنفيذ', value: totalTasks - fullyCompletedTasks, color: '#6366f1' }
+  ];
 
   // --- Handlers ---
   const handleLogin = (e: React.FormEvent) => {
@@ -462,9 +490,16 @@ export default function App() {
       {renderAdminPanel()}
       
       {/* Tab Navigation */}
-      <div className="bg-white border-b border-slate-200 sticky top-[73px] z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="bg-white border-b border-slate-200 sticky top-[73px] z-40 shadow-sm overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-max">
           <div className="flex gap-6">
+            <button 
+              onClick={() => setActiveTab('overview')}
+              className={`py-4 px-2 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'overview' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <PieChart className="w-4 h-4" />
+              لوحة المؤشرات العامة
+            </button>
             <button 
               onClick={() => setActiveTab('phases')}
               className={`py-4 px-2 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'phases' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
@@ -485,64 +520,174 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Overall Progress */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mb-8">
-          <div className="flex justify-between items-end mb-2">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">التقدم الإجمالي للخطة الاستراتيجية</h2>
-              <p className="text-sm text-slate-500">يعتمد على تصويت أعضاء مجلس الإدارة ({TOTAL_MEMBERS} أعضاء)</p>
+        {activeTab === 'overview' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <PieChart className="w-6 h-6 text-indigo-500" />
+                  لوحة المؤشرات العامة
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">نظرة شاملة على تقدم المسار الاستراتيجي والمهام التشغيلية</p>
+              </div>
             </div>
-            <span className="text-3xl font-black text-blue-600">{overallProgress}%</span>
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
-            <motion.div 
-              className="bg-blue-500 h-3 rounded-full" 
-              initial={{ width: 0 }}
-              animate={{ width: `${overallProgress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
-          </div>
-        </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
-              <Layers className="w-6 h-6" />
+            {/* Overall Progress */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+              <div className="flex justify-between items-end mb-2">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-800">التقدم الإجمالي للخطة الاستراتيجية</h2>
+                  <p className="text-sm text-slate-500">يعتمد على تصويت أعضاء مجلس الإدارة ({TOTAL_MEMBERS} أعضاء)</p>
+                </div>
+                <span className="text-3xl font-black text-blue-600">{overallProgress}%</span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
+                <motion.div 
+                  className="bg-blue-500 h-3 rounded-full" 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${overallProgress}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                />
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-slate-500 font-medium">إجمالي المراحل</p>
-              <p className="text-2xl font-bold text-slate-800">4</p>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">إجمالي المراحل</p>
+                  <p className="text-2xl font-bold text-slate-800">4</p>
+                </div>
+              </div>
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                  <FileCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">المسودات المعتمدة</p>
+                  <p className="text-2xl font-bold text-slate-800">{completedDraftsCount} <span className="text-sm text-slate-400 font-normal">من {totalDraftsCount}</span></p>
+                </div>
+              </div>
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">إجمالي التصويتات</p>
+                  <p className="text-2xl font-bold text-slate-800">{totalVotesCast} <span className="text-sm text-slate-400 font-normal">من 28</span></p>
+                </div>
+              </div>
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                  {activePhase <= 4 ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle2 className="w-6 h-6" />}
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">المرحلة النشطة</p>
+                  <p className="text-lg font-bold text-blue-600 mt-1">{activePhase <= 4 ? `المرحلة ${activePhase}` : 'مكتملة بالكامل'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Tasks Progress Chart */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-indigo-500" />
+                  إنجاز المهام حسب العضو
+                </h3>
+                <div className="h-72 w-full" dir="ltr">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={memberStats} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                      <Tooltip 
+                        cursor={{ fill: '#f1f5f9' }}
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                      <Bar dataKey="مهام مسندة" fill="#94a3b8" radius={[4, 4, 0, 0]} barSize={20} />
+                      <Bar dataKey="مهام منجزة" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={20} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Overall Status & Time */}
+              <div className="space-y-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                  <div className="w-1/2">
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">حالة المهام (100 يوم)</h3>
+                    <p className="text-sm text-slate-500 mb-4">إجمالي المهام: {totalTasks}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span className="text-sm text-slate-600">مكتملة: {fullyCompletedTasks}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
+                        <span className="text-sm text-slate-600">قيد التنفيذ: {totalTasks - fullyCompletedTasks}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="w-1/2 h-40" dir="ltr">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={40}
+                          outerRadius={60}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-2xl shadow-sm text-white">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h3 className="text-lg font-bold mb-1 flex items-center gap-2">
+                        <Hourglass className="w-5 h-5 text-amber-400" />
+                        الزمن المنقضي
+                      </h3>
+                      <p className="text-slate-400 text-sm">من خطة الـ 100 يوم</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-3xl font-black text-amber-400">{daysPassed}</span>
+                      <span className="text-slate-400 text-sm ml-1">يوم</span>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full bg-slate-700 rounded-full h-2.5 mb-2 overflow-hidden">
+                    <motion.div 
+                      className="bg-amber-400 h-2.5 rounded-full" 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${timeProgress}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-400">
+                    <span>البداية: 03 فبراير</span>
+                    <span>النهاية: 14 مايو</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-              <FileCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 font-medium">المسودات المعتمدة</p>
-              <p className="text-2xl font-bold text-slate-800">{completedDraftsCount} <span className="text-sm text-slate-400 font-normal">من {totalDraftsCount}</span></p>
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 font-medium">إجمالي التصويتات</p>
-              <p className="text-2xl font-bold text-slate-800">{totalVotesCast} <span className="text-sm text-slate-400 font-normal">من 28</span></p>
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-              {activePhase <= 4 ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle2 className="w-6 h-6" />}
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 font-medium">المرحلة النشطة</p>
-              <p className="text-lg font-bold text-blue-600 mt-1">{activePhase <= 4 ? `المرحلة ${activePhase}` : 'مكتملة بالكامل'}</p>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Timeline Section */}
         {activeTab === 'phases' ? (
