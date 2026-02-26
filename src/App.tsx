@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   LineChart, Layers, FileCheck, Hourglass, Loader2, Route, Check,
   CheckCircle2, CheckSquare, Landmark, CircleDot, Square, Clock, Lock,
-  UserCircle, LogOut, Users, Bell, ShieldCheck, Activity, Settings, Trash2, X
+  UserCircle, LogOut, Users, Bell, ShieldCheck, Activity, Settings, Trash2, X,
+  Target, Calendar, Award, BarChart3, ListTodo
 } from 'lucide-react';
 
 // --- Types & Constants ---
@@ -16,6 +17,7 @@ type User = { name: string; id: string; isAdmin?: boolean };
 type VoteRecord = { id: string; name: string; comment?: string };
 type Votes = Record<number, VoteRecord[]>;
 type Notification = { id: string; message: string; time: Date };
+type Task = { id: string; title: string; assignees: string[]; startDate: string; endDate: string; deliverables: string; phaseId?: number };
 
 const TOTAL_MEMBERS = 7;
 const BOARD_MEMBERS = [
@@ -26,6 +28,28 @@ const BOARD_MEMBERS = [
   { id: '1064258351', name: 'أ. فاطمة صالح السلمي' },
   { id: '1060048459', name: 'د. أماني عايش العنزي' },
   { id: '1114934381', name: 'م. عبدالله وليد الضيوفي', isAdmin: true },
+];
+
+const ALL_MEMBER_IDS = BOARD_MEMBERS.map(m => m.id);
+const STRATEGY_TEAM_IDS = ['1114934381', '1077394771', '1060048459', '1054208309', '1064258351'];
+
+const TASKS: Task[] = [
+  { id: 't1', title: 'التنسيق مع الجهات المشرفة', assignees: ['1017569672'], startDate: '2026-02-03', endDate: '2026-02-04', deliverables: 'خطابات رسمية لوزارة الصحة والمركز الوطني.' },
+  { id: 't2', title: 'تأمين مقر للجمعية', assignees: ['1017569672', '1026898955'], startDate: '2026-02-03', endDate: '2026-02-13', deliverables: 'مقر جاهز ومؤثث (مرحلة 1 و 2).' },
+  { id: 't3', title: 'بناء الهوية البصرية', assignees: ['1114934381', '1054208309'], startDate: '2026-02-03', endDate: '2026-02-16', deliverables: 'الشعار، الأختام، والمطبوعات الرسمية.' },
+  { id: 't4', title: 'التشخيص وتحليل المعطيات', assignees: STRATEGY_TEAM_IDS, startDate: '2026-02-10', endDate: '2026-02-13', deliverables: 'المسودة 1 (الوضع الراهن) باستخدام أدوات (PESTLE, SWOT, McKinsey 7S).', phaseId: 1 },
+  { id: 't5', title: 'هندسة الهوية والتوجه', assignees: STRATEGY_TEAM_IDS, startDate: '2026-02-14', endDate: '2026-02-17', deliverables: 'المسودات 2، 3، 4 (الرؤية، الرسالة، القيم) عبر ورش عمل.', phaseId: 2 },
+  { id: 't6', title: 'التصميم التشغيلي ونموذج العمل', assignees: STRATEGY_TEAM_IDS, startDate: '2026-02-18', endDate: '2026-02-21', deliverables: 'المسودات 5، 6 (نموذج العمل، الخطة الأولية).', phaseId: 3 },
+  { id: 't7', title: 'الحوكمة والإخراج النهائي', assignees: STRATEGY_TEAM_IDS, startDate: '2026-02-22', endDate: '2026-02-24', deliverables: 'الوثيقة الاستراتيجية الشاملة المعتمدة.', phaseId: 4 },
+  { id: 't8', title: 'إنشاء قنوات التواصل والموقع', assignees: ['1114934381'], startDate: '2026-03-05', endDate: '2026-03-12', deliverables: 'تفعيل المنصات (تويتر، يوتيوب، الموقع الإلكتروني).' },
+  { id: 't9', title: 'استخراج التراخيص والرقم 700', assignees: ['1017569672'], startDate: '2026-03-13', endDate: '2026-03-19', deliverables: 'شهادة التسجيل والرقم الموحد.' },
+  { id: 't10', title: 'حساب التأمينات الاجتماعية', assignees: ['1017569672', '1114934381'], startDate: '2026-03-20', endDate: '2026-03-24', deliverables: 'حساب مفعل وجاهز لتسجيل الموظفين.' },
+  { id: 't11', title: 'تسجيل العنوان الوطني', assignees: ['1017569672', '1114934381'], startDate: '2026-03-25', endDate: '2026-03-31', deliverables: 'شهادة العنوان الوطني المعتمدة.' },
+  { id: 't12', title: 'فتح الحساب البنكي', assignees: ['1017569672', '1114934381'], startDate: '2026-04-01', endDate: '2026-04-08', deliverables: 'حساب بنكي مفعل مع التواقيع المعتمدة.' },
+  { id: 't13', title: 'الموارد البشرية والاستقطاب', assignees: ['1017569672', '1077394771', '1026898955'], startDate: '2026-04-09', endDate: '2026-04-18', deliverables: 'تعيين المدير التنفيذي والمحاسب.' },
+  { id: 't14', title: 'الأنظمة المالية', assignees: ALL_MEMBER_IDS, startDate: '2026-04-19', endDate: '2026-04-27', deliverables: 'نظام محاسبي سحابي وموازنة معتمدة.' },
+  { id: 't15', title: 'تنمية عضوية الجمعية العمومية', assignees: ALL_MEMBER_IDS, startDate: '2026-04-28', endDate: '2026-05-03', deliverables: 'إطلاق حملة التعريف وقبول الأعضاء الجدد.' },
+  { id: 't16', title: 'إغلاق الخطة وتسليم التقرير', assignees: ALL_MEMBER_IDS, startDate: '2026-05-04', endDate: '2026-05-14', deliverables: 'التقرير الختامي لـ 100 يوم وجاهزية التشغيل.' },
 ];
 
 const PHASES = [
@@ -65,16 +89,20 @@ export default function App() {
   const [loginId, setLoginId] = useState('');
   const [loginError, setLoginError] = useState('');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [activeTab, setActiveTab] = useState<'phases' | 'tasks'>('phases');
   
   const [votes, setVotes] = useState<Votes>({ 1: [], 2: [], 3: [], 4: [] });
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [taskCompletion, setTaskCompletion] = useState<Record<string, string[]>>({});
 
   // --- Load/Save State ---
   useEffect(() => {
     const savedUser = localStorage.getItem('board_user');
     const savedVotes = localStorage.getItem('board_votes');
+    const savedTasks = localStorage.getItem('board_tasks');
     if (savedUser) setUser(JSON.parse(savedUser));
+    if (savedTasks) setTaskCompletion(JSON.parse(savedTasks));
     if (savedVotes) {
       try {
         const parsed = JSON.parse(savedVotes);
@@ -90,7 +118,8 @@ export default function App() {
   useEffect(() => {
     if (user) localStorage.setItem('board_user', JSON.stringify(user));
     localStorage.setItem('board_votes', JSON.stringify(votes));
-  }, [user, votes]);
+    localStorage.setItem('board_tasks', JSON.stringify(taskCompletion));
+  }, [user, votes, taskCompletion]);
 
   // --- Derived State ---
   let activePhase = 1;
@@ -164,6 +193,26 @@ export default function App() {
       ...prev,
       [phaseId]: []
     }));
+  };
+
+  const toggleTaskCompletion = (taskId: string, memberId: string) => {
+    setTaskCompletion(prev => {
+      const current = prev[taskId] || [];
+      const isCompleted = current.includes(memberId);
+      const updated = isCompleted ? current.filter(id => id !== memberId) : [...current, memberId];
+      
+      if (!isCompleted) {
+        const task = TASKS.find(t => t.id === taskId);
+        const newNotif = {
+          id: Math.random().toString(36).substr(2, 9),
+          message: `أنجز ${user?.name} مهمة: ${task?.title}`,
+          time: new Date()
+        };
+        setNotifications(n => [newNotif, ...n].slice(0, 5));
+      }
+      
+      return { ...prev, [taskId]: updated };
+    });
   };
 
   const renderVoters = (phaseVotes: VoteRecord[]) => {
@@ -411,6 +460,29 @@ export default function App() {
       </div>
 
       {renderAdminPanel()}
+      
+      {/* Tab Navigation */}
+      <div className="bg-white border-b border-slate-200 sticky top-[73px] z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-6">
+            <button 
+              onClick={() => setActiveTab('phases')}
+              className={`py-4 px-2 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'phases' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <Route className="w-4 h-4" />
+              المسار الاستراتيجي والاعتمادات
+            </button>
+            <button 
+              onClick={() => setActiveTab('tasks')}
+              className={`py-4 px-2 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'tasks' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <ListTodo className="w-4 h-4" />
+              المهام ومؤشرات الأداء (100 يوم)
+            </button>
+          </div>
+        </div>
+      </div>
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Overall Progress */}
@@ -473,188 +545,320 @@ export default function App() {
         </div>
 
         {/* Timeline Section */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Route className="w-6 h-6 text-slate-400" />
-            المخطط الزمني للمراحل والاعتمادات
-          </h2>
-          {user.isAdmin && (
-            <button 
-              onClick={() => setShowAdminPanel(true)}
-              className="md:hidden flex items-center gap-1 px-3 py-1.5 bg-slate-800 text-white rounded-full text-xs font-medium"
-            >
-              <Settings className="w-3 h-3" /> إدارة
-            </button>
-          )}
-        </div>
-
-        <div className="relative py-4 before:content-[''] before:absolute before:top-0 before:bottom-0 before:right-1/2 before:w-0.5 before:bg-slate-200 before:translate-x-1/2 max-md:before:right-6">
-          
-          {PHASES.map((phase) => {
-            const phaseVotes = votes[phase.id];
-            const isCompleted = phaseVotes.length === TOTAL_MEMBERS;
-            const isActive = activePhase === phase.id;
-            const isLocked = activePhase < phase.id;
-            const userHasVoted = phaseVotes.some(v => v.id === user.id);
-            const votePercentage = (phaseVotes.length / TOTAL_MEMBERS) * 100;
-
-            return (
-              <div key={phase.id} className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group mb-12 ${isLocked ? 'opacity-60' : ''}`}>
-                
-                {/* Center Icon */}
-                <div className={`flex items-center justify-center w-12 h-12 rounded-full border-4 border-white shadow-md shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 max-md:mr-0 transition-colors
-                  ${isCompleted ? 'bg-emerald-500 text-white' : 
-                    isActive ? 'bg-blue-500 text-white ring-4 ring-blue-100' : 
-                    'bg-slate-200 text-slate-400'}`}
+        {activeTab === 'phases' ? (
+          <>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <Route className="w-6 h-6 text-slate-400" />
+                المخطط الزمني للمراحل والاعتمادات
+              </h2>
+              {user.isAdmin && (
+                <button 
+                  onClick={() => setShowAdminPanel(true)}
+                  className="md:hidden flex items-center gap-1 px-3 py-1.5 bg-slate-800 text-white rounded-full text-xs font-medium"
                 >
-                  {isCompleted ? <Check className="w-5 h-5" /> : 
-                   isActive ? <Loader2 className="w-5 h-5 animate-spin" /> : 
-                   <Lock className="w-5 h-5" />}
-                </div>
+                  <Settings className="w-3 h-3" /> إدارة
+                </button>
+              )}
+            </div>
 
-                {/* Card */}
-                <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] p-5 rounded-xl shadow-sm bg-white border transition-all
-                  ${isActive ? 'border-2 border-blue-400 shadow-md' : 'border-slate-200'}`}>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className={`text-lg font-bold flex items-center ${isActive ? 'text-slate-800' : 'text-slate-600'}`}>
-                      <span className={`text-sm ml-1 flex items-center gap-1 ${isCompleted ? 'text-emerald-600' : isActive ? 'text-blue-600' : 'text-slate-400'}`}>
-                        {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : isActive ? <CircleDot className="w-4 h-4" /> : null}
-                        المرحلة {phase.id}:
-                      </span>
-                      {phase.title}
-                    </h3>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium border 
-                      ${isCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
-                        isActive ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' : 
-                        'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                      {isCompleted ? 'مكتملة' : isActive ? 'نشطة الآن' : 'قادمة'}
-                    </span>
-                  </div>
-                  
-                  {/* Tools */}
-                  <div className="mb-4">
-                    <p className="text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">الأدوات المنهجية</p>
-                    <div className="flex flex-wrap gap-2">
-                      {phase.tools.map(tool => (
-                        <span key={tool} className="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded border border-slate-200">{tool}</span>
-                      ))}
+            <div className="relative py-4 before:content-[''] before:absolute before:top-0 before:bottom-0 before:right-1/2 before:w-0.5 before:bg-slate-200 before:translate-x-1/2 max-md:before:right-6">
+              
+              {PHASES.map((phase) => {
+                const phaseVotes = votes[phase.id];
+                const isCompleted = phaseVotes.length === TOTAL_MEMBERS;
+                const isActive = activePhase === phase.id;
+                const isLocked = activePhase < phase.id;
+                const userHasVoted = phaseVotes.some(v => v.id === user.id);
+                const votePercentage = (phaseVotes.length / TOTAL_MEMBERS) * 100;
+
+                return (
+                  <div key={phase.id} className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group mb-12 ${isLocked ? 'opacity-60' : ''}`}>
+                    
+                    {/* Center Icon */}
+                    <div className={`flex items-center justify-center w-12 h-12 rounded-full border-4 border-white shadow-md shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 max-md:mr-0 transition-colors
+                      ${isCompleted ? 'bg-emerald-500 text-white' : 
+                        isActive ? 'bg-blue-500 text-white ring-4 ring-blue-100' : 
+                        'bg-slate-200 text-slate-400'}`}
+                    >
+                      {isCompleted ? <Check className="w-5 h-5" /> : 
+                       isActive ? <Loader2 className="w-5 h-5 animate-spin" /> : 
+                       <Lock className="w-5 h-5" />}
                     </div>
-                  </div>
-                  
-                  {/* Drafts */}
-                  <div className="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <p className="text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">المسودات</p>
-                    <ul className="space-y-2">
-                      {phase.drafts.map((draft, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm">
-                          {isCompleted ? <CheckSquare className="w-4 h-4 text-emerald-500 mt-0.5" /> : 
-                           isActive ? <Square className="w-4 h-4 text-slate-300 mt-0.5" /> : 
-                           <Lock className="w-4 h-4 text-slate-300 mt-0.5" />}
-                          <span className={`${isCompleted ? 'text-slate-500 line-through' : isActive ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
-                            {draft}
+
+                    {/* Card */}
+                    <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] p-5 rounded-xl shadow-sm bg-white border transition-all
+                      ${isActive ? 'border-2 border-blue-400 shadow-md' : 'border-slate-200'}`}>
+                      
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className={`text-lg font-bold flex items-center ${isActive ? 'text-slate-800' : 'text-slate-600'}`}>
+                          <span className={`text-sm ml-1 flex items-center gap-1 ${isCompleted ? 'text-emerald-600' : isActive ? 'text-blue-600' : 'text-slate-400'}`}>
+                            {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : isActive ? <CircleDot className="w-4 h-4" /> : null}
+                            المرحلة {phase.id}:
                           </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  {/* Board Portal / Voting Area */}
-                  <div className={`p-4 rounded-lg border ${
-                    isCompleted ? 'bg-emerald-50 border-emerald-200' : 
-                    isActive ? 'bg-blue-50 border-blue-200' : 
-                    'bg-slate-50 border-slate-200'
-                  }`}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Landmark className={`w-5 h-5 ${isCompleted ? 'text-emerald-600' : isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                      <p className={`text-sm font-bold ${isCompleted ? 'text-emerald-800' : isActive ? 'text-blue-800' : 'text-slate-600'}`}>
-                        بوابة مجلس الإدارة: {phase.gate}
-                      </p>
-                    </div>
-
-                    {isLocked && (
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-slate-500">بانتظار اكتمال المراحل السابقة</p>
-                        <span className="text-xs px-2 py-1 rounded bg-slate-200 text-slate-500 font-bold">مغلقة</span>
+                          {phase.title}
+                        </h3>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium border 
+                          ${isCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                            isActive ? 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' : 
+                            'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                          {isCompleted ? 'مكتملة' : isActive ? 'نشطة الآن' : 'قادمة'}
+                        </span>
                       </div>
-                    )}
-
-                    {isCompleted && (
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-emerald-700">تم اعتماد المرحلة بالإجماع ({TOTAL_MEMBERS}/{TOTAL_MEMBERS})</p>
-                          <span className="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700 font-bold flex items-center gap-1"><Check className="w-3 h-3" /> معتمدة</span>
+                      
+                      {/* Tools */}
+                      <div className="mb-4">
+                        <p className="text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">الأدوات المنهجية</p>
+                        <div className="flex flex-wrap gap-2">
+                          {phase.tools.map(tool => (
+                            <span key={tool} className="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded border border-slate-200">{tool}</span>
+                          ))}
                         </div>
-                        {renderVoters(phaseVotes)}
-                        {renderComments(phaseVotes)}
                       </div>
-                    )}
-
-                    {isActive && (
-                      <div className="space-y-4">
-                        {/* Progress Bar for Votes */}
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="text-blue-700 font-medium">تقدم التصويت</span>
-                            <span className="text-blue-700 font-bold">{phaseVotes.length} من {TOTAL_MEMBERS}</span>
-                          </div>
-                          <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
-                            <motion.div 
-                              className="bg-blue-600 h-2 rounded-full"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${votePercentage}%` }}
-                            />
-                          </div>
+                      
+                      {/* Drafts */}
+                      <div className="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p className="text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">المسودات</p>
+                        <ul className="space-y-2">
+                          {phase.drafts.map((draft, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              {isCompleted ? <CheckSquare className="w-4 h-4 text-emerald-500 mt-0.5" /> : 
+                               isActive ? <Square className="w-4 h-4 text-slate-300 mt-0.5" /> : 
+                               <Lock className="w-4 h-4 text-slate-300 mt-0.5" />}
+                              <span className={`${isCompleted ? 'text-slate-500 line-through' : isActive ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
+                                {draft}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      {/* Board Portal / Voting Area */}
+                      <div className={`p-4 rounded-lg border ${
+                        isCompleted ? 'bg-emerald-50 border-emerald-200' : 
+                        isActive ? 'bg-blue-50 border-blue-200' : 
+                        'bg-slate-50 border-slate-200'
+                      }`}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Landmark className={`w-5 h-5 ${isCompleted ? 'text-emerald-600' : isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                          <p className={`text-sm font-bold ${isCompleted ? 'text-emerald-800' : isActive ? 'text-blue-800' : 'text-slate-600'}`}>
+                            بوابة مجلس الإدارة: {phase.gate}
+                          </p>
                         </div>
 
-                        {renderVoters(phaseVotes)}
-                        {renderComments(phaseVotes)}
+                        {isLocked && (
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-slate-500">بانتظار اكتمال المراحل السابقة</p>
+                            <span className="text-xs px-2 py-1 rounded bg-slate-200 text-slate-500 font-bold">مغلقة</span>
+                          </div>
+                        )}
 
-                        {/* Voting Action */}
-                        <div className="pt-2 border-t border-blue-100">
-                          {!userHasVoted ? (
-                            <button 
-                              onClick={() => castVote(phase.id, user.id, user.name)}
-                              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
-                            >
-                              <CheckCircle2 className="w-5 h-5" />
-                              تصويت بالموافقة والاعتماد
-                            </button>
-                          ) : (
+                        {isCompleted && (
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-emerald-700">تم اعتماد المرحلة بالإجماع ({TOTAL_MEMBERS}/{TOTAL_MEMBERS})</p>
+                              <span className="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700 font-bold flex items-center gap-1"><Check className="w-3 h-3" /> معتمدة</span>
+                            </div>
+                            {renderVoters(phaseVotes)}
+                            {renderComments(phaseVotes)}
+                          </div>
+                        )}
+
+                        {isActive && (
+                          <div className="space-y-4">
+                            {/* Progress Bar for Votes */}
                             <div>
-                              <div className="w-full bg-emerald-100 text-emerald-700 font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 border border-emerald-200 mb-3">
-                                <Check className="w-5 h-5" />
-                                تم تسجيل تصويتك بنجاح
+                              <div className="flex justify-between text-xs mb-1">
+                                <span className="text-blue-700 font-medium">تقدم التصويت</span>
+                                <span className="text-blue-700 font-bold">{phaseVotes.length} من {TOTAL_MEMBERS}</span>
                               </div>
-                              {!phaseVotes.find(v => v.id === user.id)?.comment && (
-                                <div className="flex gap-2">
-                                  <input 
-                                    type="text" 
-                                    placeholder="إضافة تعليق (اختياري)..." 
-                                    value={commentInputs[phase.id] || ''}
-                                    onChange={e => setCommentInputs({...commentInputs, [phase.id]: e.target.value})}
-                                    className="flex-1 px-3 py-2 rounded-md border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                  />
-                                  <button 
-                                    onClick={() => castVote(phase.id, user.id, user.name, false, commentInputs[phase.id])}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-md text-sm font-medium transition-colors"
-                                  >
-                                    إرسال
-                                  </button>
+                              <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
+                                <motion.div 
+                                  className="bg-blue-600 h-2 rounded-full"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${votePercentage}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            {renderVoters(phaseVotes)}
+                            {renderComments(phaseVotes)}
+
+                            {/* Voting Action */}
+                            <div className="pt-2 border-t border-blue-100">
+                              {!userHasVoted ? (
+                                <button 
+                                  onClick={() => castVote(phase.id, user.id, user.name)}
+                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
+                                >
+                                  <CheckCircle2 className="w-5 h-5" />
+                                  تصويت بالموافقة والاعتماد
+                                </button>
+                              ) : (
+                                <div>
+                                  <div className="w-full bg-emerald-100 text-emerald-700 font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 border border-emerald-200 mb-3">
+                                    <Check className="w-5 h-5" />
+                                    تم تسجيل تصويتك بنجاح
+                                  </div>
+                                  {!phaseVotes.find(v => v.id === user.id)?.comment && (
+                                    <div className="flex gap-2">
+                                      <input 
+                                        type="text" 
+                                        placeholder="إضافة تعليق (اختياري)..." 
+                                        value={commentInputs[phase.id] || ''}
+                                        onChange={e => setCommentInputs({...commentInputs, [phase.id]: e.target.value})}
+                                        className="flex-1 px-3 py-2 rounded-md border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                                      />
+                                      <button 
+                                        onClick={() => castVote(phase.id, user.id, user.name, false, commentInputs[phase.id])}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-md text-sm font-medium transition-colors"
+                                      >
+                                        إرسال
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
+                  </div>
+                );
+              })}
+
+            </div>
+          </>
+        ) : (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <Target className="w-6 h-6 text-indigo-500" />
+                  المهام ومؤشرات الأداء (خطة 100 يوم)
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">متابعة إنجاز المهام المسندة لأعضاء مجلس الإدارة</p>
+              </div>
+            </div>
+
+            {/* User KPI Card */}
+            <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm border border-white/30">
+                    <BarChart3 className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">مؤشر الأداء الخاص بك</h3>
+                    <p className="text-indigo-100 text-sm">{user.name}</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-8">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold">
+                      {TASKS.filter(t => t.assignees.includes(user.id)).length}
+                    </p>
+                    <p className="text-xs text-indigo-200 mt-1">إجمالي المهام</p>
+                  </div>
+                  <div className="w-px bg-white/20"></div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-emerald-300">
+                      {TASKS.filter(t => t.assignees.includes(user.id) && (taskCompletion[t.id] || []).includes(user.id)).length}
+                    </p>
+                    <p className="text-xs text-indigo-200 mt-1">المهام المنجزة</p>
+                  </div>
+                  <div className="w-px bg-white/20"></div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-amber-300">
+                      {Math.round((TASKS.filter(t => t.assignees.includes(user.id) && (taskCompletion[t.id] || []).includes(user.id)).length / Math.max(1, TASKS.filter(t => t.assignees.includes(user.id)).length)) * 100)}%
+                    </p>
+                    <p className="text-xs text-indigo-200 mt-1">نسبة الإنجاز</p>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
 
-        </div>
+            {/* Tasks List */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {TASKS.map(task => {
+                const isAssignedToMe = task.assignees.includes(user.id);
+                const isCompletedByMe = (taskCompletion[task.id] || []).includes(user.id);
+                const completionCount = (taskCompletion[task.id] || []).length;
+                const totalAssignees = task.assignees.length;
+                const isFullyCompleted = completionCount === totalAssignees;
+                
+                return (
+                  <div key={task.id} className={`bg-white rounded-xl border p-5 transition-all ${isFullyCompleted ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200 hover:border-indigo-200 hover:shadow-md'}`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className={`font-bold text-lg ${isFullyCompleted ? 'text-emerald-800' : 'text-slate-800'}`}>
+                        {task.title}
+                      </h3>
+                      {task.phaseId && (
+                        <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-1 rounded-md border border-indigo-100">
+                          مرحلة {task.phaseId}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-xs text-slate-500 mb-4">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>{task.startDate} إلى {task.endDate}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Award className="w-3.5 h-3.5" />
+                        <span>{task.deliverables}</span>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold text-slate-600 mb-2">الأعضاء المكلفون ({completionCount}/{totalAssignees} أنجزوا):</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {task.assignees.map(assigneeId => {
+                          const member = BOARD_MEMBERS.find(m => m.id === assigneeId);
+                          const hasCompleted = (taskCompletion[task.id] || []).includes(assigneeId);
+                          return (
+                            <div key={assigneeId} className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border ${hasCompleted ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                              {hasCompleted ? <Check className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                              {member?.name.replace(/^(د\.|م\.|أ\.)\s*/, '')}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {isAssignedToMe && (
+                      <div className="pt-4 border-t border-slate-100 mt-auto">
+                        <button
+                          onClick={() => toggleTaskCompletion(task.id, user.id)}
+                          className={`w-full py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+                            isCompletedByMe 
+                              ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-200' 
+                              : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+                          }`}
+                        >
+                          {isCompletedByMe ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4" />
+                              تم إنجاز المهمة (إلغاء التحديد)
+                            </>
+                          ) : (
+                            <>
+                              <Square className="w-4 h-4" />
+                              تأكيد إنجاز المهمة
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
