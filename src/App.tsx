@@ -277,12 +277,16 @@ export default function App() {
         >
           <div className="flex flex-col items-center justify-center mb-6">
             <img 
-              src="/logo.png" 
+              src="https://i.imgur.com/BBxVlTQ.png" 
               alt="جمعية آزِر لمرضى الأورام بتبوك | AZER" 
               className="h-24 w-auto object-contain mb-4"
               onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                if (!e.currentTarget.src.endsWith('.jpg')) {
+                  e.currentTarget.src = 'https://i.imgur.com/BBxVlTQ.jpg';
+                } else {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }
               }}
             />
             <div className="hidden w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-4">
@@ -331,12 +335,16 @@ export default function App() {
             <div className="flex items-center gap-4">
               <div className="shrink-0">
                 <img 
-                  src="/logo.png" 
+                  src="https://i.imgur.com/BBxVlTQ.png" 
                   alt="جمعية آزِر لمرضى الأورام بتبوك | AZER" 
                   className="h-14 w-auto object-contain"
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    if (!e.currentTarget.src.endsWith('.jpg')) {
+                      e.currentTarget.src = 'https://i.imgur.com/BBxVlTQ.jpg';
+                    } else {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }
                   }}
                 />
                 <div className="hidden p-2.5 bg-indigo-50 text-indigo-600 rounded-lg">
